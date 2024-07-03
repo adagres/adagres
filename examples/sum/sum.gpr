@@ -1,0 +1,53 @@
+with "config/sum_config.gpr";
+with "../../adagres/adagres.gpr";
+with "../../adagres_ext_config.gpr" ;
+
+library project Sum is
+
+-- adagres_extension
+--   Postgres_Bindir := external("POSTGRES_BINDIR");
+--   Postgres_Bin := Postgres_Bindir & "/postgres";
+--   Postgres_IncludeDir := external("POSTGRES_INCLUDEDIR") & "/postgresql/server";
+ ---
+   for Library_Name use "sum";
+   for Library_Version use Project'Library_Name & "--" & Sum_Config.Crate_Version & ".so";
+
+   for Library_Kind use "dynamic";
+
+   for Source_Dirs use ("src/", "config/");
+   for Object_Dir use "obj/" & Sum_Config.Build_Profile;
+   for Create_Missing_Dirs use "True";
+   for Library_Dir use "lib";
+
+   --
+   for Languages use ("Ada", "C");
+   for Library_Interface use ("sum");  --  unit names
+   for Library_Auto_Init use "true";
+
+   -- Important as (most of) these can't be overridden in an extension project
+   for Library_Encapsulated_Supported use "true";
+   for Shared_Library_Minimum_Switches use ();
+   for Library_Standalone use "encapsulated";
+
+   case Sum_Config.Alire_Host_OS is
+     when "macos" =>
+       for Library_Encapsulated_Options use ("-bundle", "-bundle_loader", Adagres_Ext_Config.Postgres_Bin);
+     when others =>
+       for Library_Encapsulated_Options use ("-shared","-fPIC");
+   end case;
+   --
+
+   package Compiler is
+      for Default_Switches ("Ada") use Sum_Config.Ada_Compiler_Switches & ("-gnat2022", "-gnatyM100", "-fPIC");
+      for Switches ("C") use ("-I", Adagres_Ext_Config.Postgres_IncludeDir, "-fPIC");
+   end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
+
+   package Install is
+      for Artifacts (".") use ("share");
+   end Install;
+
+end Sum;

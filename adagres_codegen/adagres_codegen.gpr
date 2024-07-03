@@ -1,0 +1,34 @@
+with "config/adagres_codegen_config.gpr";
+with "../adagres_ext_config.gpr";
+project Adagres_Codegen is
+
+   for Source_Dirs use ("src/", "config/");
+   for Object_Dir use "obj/" & Adagres_Codegen_Config.Build_Profile;
+   for Create_Missing_Dirs use "True";
+   for Exec_Dir use "bin";
+   for Main use ("main.adb");
+
+   for Languages use ("C", "Ada");
+
+   package Compiler is
+      for Default_Switches ("Ada") use Adagres_Codegen_Config.Ada_Compiler_Switches & ("-gnat2022", "-gnatyM100");
+      for Switches ("C") use ("-I", Adagres_Ext_Config.Postgres_IncludeDir);
+   end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
+
+   package Install is
+      for Artifacts (".") use ("share");
+   end Install;
+
+   package Builder is
+      for Executable ("main.adb") use "adagres_codegen";
+   end Builder;
+
+   package Linker is
+      for Default_Switches ("Ada") use ("-lgnarl");
+   end Linker;
+
+end Adagres_Codegen;
