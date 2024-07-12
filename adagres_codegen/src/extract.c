@@ -11,9 +11,7 @@
 void extract_types_and_constants()
 {
 #define member_layout(type, name) offsetof(type, name), sizeof(((type *)0)->name) * 8 - 1
-    char out[PATH_MAX];
-    realpath(__FILE__ "/../../generated/adagres-codegen.ads", out);
-    FILE *f = fopen(out, "w");
+    FILE *f = fopen("generated/adagres-codegen.ads", "w");
     fprintf(f,
             "with Interfaces.C; use Interfaces.C;\n"
             "with Interfaces.C.Extensions;  use Interfaces.C.Extensions;\n"
@@ -55,12 +53,10 @@ void extract_types_and_constants()
 
     fprintf(f, "end Adagres.Codegen;\n");
     fclose(f);
-    system("gnatpp $(realpath "__FILE__
-           "/../../generated/adagres-codegen.ads)");
-    fprintf(stdout, "Wrote %s\n", out);
+    system("gnatpp generated/adagres-codegen.ads");
+    fprintf(stdout, "Wrote adagres-codegen.ads");
 
-    realpath(__FILE__ "/../../generated/adagres-constants.ads", out);
-    f = fopen(out, "w");
+    f = fopen("generated/adagres-constants.ads", "w");
 
     fprintf(f,
             "with Interfaces.C; use Interfaces.C;\n"
@@ -92,7 +88,6 @@ void extract_types_and_constants()
 
     fprintf(f, "end Adagres.Constants;\n");
     fclose(f);
-    system("gnatpp $(realpath "__FILE__
-           "/../../generated/adagres-constants.ads)");
-    fprintf(stdout, "Wrote %s\n", out);
+    system("gnatpp generated/adagres-constants.ads");
+    fprintf(stdout, "Wrote adagres-constants.ads");
 }
