@@ -1,4 +1,4 @@
-with Ada.Text_IO;      use Ada.Text_IO;
+with Ada.Text_IO;         use Ada.Text_IO;
 with Adagres.Memory_Context;
 with Adagres.Checked_FFI; use Adagres.Checked_FFI;
 with System;
