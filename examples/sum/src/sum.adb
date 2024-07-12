@@ -1,6 +1,6 @@
 with Ada.Text_IO;      use Ada.Text_IO;
 with Adagres.Memory_Context;
-with Adagres.Safe_FFI; use Adagres.Safe_FFI;
+with Adagres.Checked_FFI; use Adagres.Checked_FFI;
 with System;
 with System.Address_Image;
 

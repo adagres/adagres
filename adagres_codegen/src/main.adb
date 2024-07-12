@@ -17,7 +17,7 @@ procedure Main is
    procedure Extract_Types_And_Constants with
      Import, Convention => C, External_Name => "extract_types_and_constants";
 
-   FFI_Wrapped_Ads, FFI_Wrapped_Adb : File_Type;
+   Checked_FFI_Ads, Checked_FFI_Adb : File_Type;
 
    package Buf_Str is new Ada.Strings.Bounded.Generic_Bounded_Length (Max => 1_024);
 
@@ -55,9 +55,9 @@ procedure Main is
             Buf_Str.Trim
               (Pass_Args, Left => Ada.Strings.Maps.Null_Set,
                Right           => Ada.Strings.Maps.To_Set (','));
-            Put_Line (FFI_Wrapped_Ads, Text.Encode (Spec.Text, "utf8") & " with Inline_Always;");
+            Put_Line (Checked_FFI_Ads, Text.Encode (Spec.Text, "utf8") & " with Inline_Always;");
             Put_Line
-              (FFI_Wrapped_Adb,
+              (Checked_FFI_Adb,
                Text.Encode (Node.As_Basic_Decl.P_Subp_Spec_Or_Null (True).Text, "utf8") & " is " &
                "Ok     : int;" & "Old_JB : access Sig_Jmp_Buf;" & "begin " &
                "Old_JB := PG_exception_stack;" &
@@ -75,42 +75,49 @@ procedure Main is
 begin
    Extract_Types_And_Constants;
 
-   Create (File => FFI_Wrapped_Ads, Mode => Out_File, Name => "generated/adagres-safe_ffi.ads");
-   Create (File => FFI_Wrapped_Adb, Mode => Out_File, Name => "generated/adagres-safe_ffi.adb");
-   Put_Line (FFI_Wrapped_Ads, "with System;");
-   Put_Line (FFI_Wrapped_Ads, "with Interfaces.C;");
-   Put_Line (FFI_Wrapped_Ads, "with Interfaces.C.Extensions;");
-   Put_Line (FFI_Wrapped_Ads, "with Adagres.FFI_Types; use Adagres.FFI_Types;");
-   Put_Line (FFI_Wrapped_Ads, "package Adagres.Safe_FFI with Preelaborate is");
+   Create (File => Checked_FFI_Ads, Mode => Out_File, Name => "generated/adagres-checked_ffi.ads");
+   Create (File => Checked_FFI_Adb, Mode => Out_File, Name => "generated/adagres-checked_ffi.adb");
+   Put_Line (Checked_FFI_Ads, "with System;");
+   Put_Line (Checked_FFI_Ads, "with Interfaces.C;");
+   Put_Line (Checked_FFI_Ads, "with Interfaces.C.Extensions;");
+   Put_Line (Checked_FFI_Ads, "with Adagres.FFI_Types; use Adagres.FFI_Types;");
+   Put_Line (Checked_FFI_Ads, "package Adagres.Checked_FFI with Preelaborate is");
 
-   Put_Line (FFI_Wrapped_Adb, "with System;");
-   Put_Line (FFI_Wrapped_Adb, "with Interfaces.C; use Interfaces.C;");
-   Put_Line (FFI_Wrapped_Adb, "with Interfaces.C.Extensions; use Interfaces.C.Extensions;");
-   Put_Line (FFI_Wrapped_Adb, "with Adagres.Codegen; use Adagres.Codegen;");
-   Put_Line (FFI_Wrapped_Adb, "with Adagres.FFI_Types;");
-   Put_Line (FFI_Wrapped_Adb, "with Adagres.FFI;");
-   Put_Line (FFI_Wrapped_Adb, "with Adagres.SetJmp; use Adagres.SetJmp;");
-   Put_Line (FFI_Wrapped_Adb, "package body Adagres.Safe_FFI is");
+   Put_Line (Checked_FFI_Adb, "with System;");
+   Put_Line (Checked_FFI_Adb, "with Interfaces.C; use Interfaces.C;");
+   Put_Line (Checked_FFI_Adb, "with Interfaces.C.Extensions; use Interfaces.C.Extensions;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.Codegen; use Adagres.Codegen;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.FFI_Types;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.FFI;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.SetJmp; use Adagres.SetJmp;");
+   Put_Line (Checked_FFI_Adb, "package body Adagres.Checked_FFI is");
 
    Unit := Context.Get_From_File ("../adagres/sig/adagres-ffi.ads");
    --     Unit.Print;
    Unit.Root.Traverse (Process_Node'Access);
 
-   Put_Line (FFI_Wrapped_Ads, "end Adagres.Safe_FFI;");
-   Put_Line (FFI_Wrapped_Adb, "end Adagres.Safe_FFI;");
+   Put_Line (Checked_FFI_Ads, "end Adagres.Checked_FFI;");
+   Put_Line (Checked_FFI_Adb, "end Adagres.Checked_FFI;");
 
-   Close (FFI_Wrapped_Ads);
-   Close (FFI_Wrapped_Adb);
+   Close (Checked_FFI_Ads);
+   Close (Checked_FFI_Adb);
 
-   if GNAT.OS_Lib.Spawn
-       (Program_Name => GNAT.OS_Lib.Locate_Exec_On_Path ("gnatpp").all,
-        Args         =>
-          [new String'("generated/adagres-safe_ffi.ads"),
-          new String'("generated/adagres-safe_ffi.adb")]) /=
-     0
-   then
+   declare
+      use GNAT.OS_Lib;
+      GnatPP : constant String_Access := Locate_Exec_On_Path ("gnatpp");
+   begin
+      if GnatPP /= null
+        and then
+          Spawn
+            (Program_Name => GnatPP.all,
+             Args         =>
+               [new String'("generated/adagres-checked_ffi.ads"),
+               new String'("generated/adagres-checked_ffi.adb")]) /=
+          0
+      then
 
-      null; -- Ignore the error
-   end if;
+         null; -- Ignore the error
+      end if;
+   end;
 
 end Main;
