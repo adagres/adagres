@@ -31,6 +31,7 @@ procedure Main is
 
       FQ_Subp_Name, Subp_Name : Buf_Str.Bounded_String;
       Pass_Args               : Buf_Str.Bounded_String := Buf_Str.Null_Bounded_String;
+      Signature, Ret_Type     : Buf_Str.Bounded_String;
    begin
       if Node.Kind = LALCO.Ada_Subp_Decl then
          Subp := Node.As_Subp_Decl;
@@ -55,16 +56,33 @@ procedure Main is
             Buf_Str.Trim
               (Pass_Args, Left => Ada.Strings.Maps.Null_Set,
                Right           => Ada.Strings.Maps.To_Set (','));
-            Put_Line (Checked_FFI_Ads, Text.Encode (Spec.Text, "utf8") & " with Inline_Always;");
+            Signature := Buf_Str.To_Bounded_String (Text.Encode (Spec.Text, "utf8"));
+            Put_Line (Checked_FFI_Ads, Buf_Str.To_String (Signature) & " with Inline_Always;");
+
+            Ret_Type :=
+              Buf_Str.To_Bounded_String
+                (Text.Encode
+                   (Text.To_Text (Spec.As_Subp_Spec.F_Subp_Returns.P_Type_Name.P_Canonical_Text),
+                    "utf8"));
+
             Put_Line
               (Checked_FFI_Adb,
                Text.Encode (Node.As_Basic_Decl.P_Subp_Spec_Or_Null (True).Text, "utf8") & " is " &
-               "Ok     : int;" & "Old_JB : access Sig_Jmp_Buf;" & "begin " &
-               "Old_JB := PG_exception_stack;" &
-               "Ok     := sigsetjmp (Local_Sig_Jmp_Buf'Access, 0);" & "if Ok /= 0 then " &
-               "PG_exception_stack := Old_JB;" & "Re_Throw;" & " else " &
-               (if Is_Function then "return " else "") & Buf_Str.To_String (FQ_Subp_Name) & "(" &
-               Buf_Str.To_String (Pass_Args) & ");" & "end if;" & "end " &
+               "Result     : " & Buf_Str.To_String (Ret_Type) & ";" &
+               "Old_JB : access Sig_Jmp_Buf;" & "CB: access Error_Context_Callback;" &
+               "Preceding_Memory_Context : Adagres.FFI_Types.Memory_Context := " &
+               "Adagres.Memory_Context.Current_Memory_Context;" & "begin " &
+               "if sigsetjmp (Local_Sig_Jmp_Buf'Access, 0) /= 0 then " &
+               "Adagres.Error.PG_exception_stack := Old_JB;" &
+               "Adagres.Error.Error_Context_Stack := CB;" &
+               "Raise_Postgres_Error (Preceding_Memory_Context);" & " else " &
+               "Old_JB := Adagres.Error.PG_exception_stack;" &
+               "CB := Adagres.Error.Error_Context_Stack;" &
+               "Adagres.Error.PG_exception_stack := Local_Sig_Jmp_Buf'Access;" &
+               (if Is_Function then "Result := " else "") & Buf_Str.To_String (FQ_Subp_Name) & "(" &
+               Buf_Str.To_String (Pass_Args) & ");" &
+               "Adagres.Error.PG_exception_stack := Old_JB;" &
+               "Adagres.Error.Error_Context_Stack := CB;" & "return Result;" & "end if;" & "end " &
                Buf_Str.To_String (Subp_Name) & ";");
          end if;
       end if;
@@ -79,23 +97,27 @@ begin
    Create (File => Checked_FFI_Adb, Mode => Out_File, Name => "generated/adagres-checked_ffi.adb");
    Put_Line (Checked_FFI_Ads, "with System;");
    Put_Line (Checked_FFI_Ads, "with Interfaces.C;");
+   Put_Line (Checked_FFI_Ads, "with Interfaces.C.Strings;");
    Put_Line (Checked_FFI_Ads, "with Interfaces.C.Extensions;");
+
    Put_Line (Checked_FFI_Ads, "with Adagres.FFI_Types; use Adagres.FFI_Types;");
+   Put_Line (Checked_FFI_Ads, "with Adagres.Codegen; use Adagres.Codegen;");
    Put_Line (Checked_FFI_Ads, "package Adagres.Checked_FFI with Preelaborate is");
 
    Put_Line (Checked_FFI_Adb, "with System;");
    Put_Line (Checked_FFI_Adb, "with Interfaces.C; use Interfaces.C;");
    Put_Line (Checked_FFI_Adb, "with Interfaces.C.Extensions; use Interfaces.C.Extensions;");
-   Put_Line (Checked_FFI_Adb, "with Adagres.Codegen; use Adagres.Codegen;");
-   Put_Line (Checked_FFI_Adb, "with Adagres.FFI_Types;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.Memory_Context;");
    Put_Line (Checked_FFI_Adb, "with Adagres.FFI;");
    Put_Line (Checked_FFI_Adb, "with Adagres.SetJmp; use Adagres.SetJmp;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.Error; use Adagres.Error;");
    Put_Line (Checked_FFI_Adb, "package body Adagres.Checked_FFI is");
 
    Unit := Context.Get_From_File ("../adagres/sig/adagres-ffi.ads");
    --     Unit.Print;
    Unit.Root.Traverse (Process_Node'Access);
 
+   Put_Line (Checked_FFI_Ads, "private Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;");
    Put_Line (Checked_FFI_Ads, "end Adagres.Checked_FFI;");
    Put_Line (Checked_FFI_Adb, "end Adagres.Checked_FFI;");
 

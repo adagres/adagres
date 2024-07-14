@@ -9,4 +9,7 @@ is
    Current_Memory_Context : T.Memory_Context with
      Import, Convention => C, External_Name => "CurrentMemoryContext";
 
+   Error_Context : T.Memory_Context with
+     Import, Convention => C, External_Name => "ErrorContext";
+
 end Adagres.Memory_Context;

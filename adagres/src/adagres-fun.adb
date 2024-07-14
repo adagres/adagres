@@ -1,5 +1,8 @@
 with Ada.Exceptions;    use Ada.Exceptions;
 with Adagres.Constants; use Adagres.Constants;
+with Adagres.SetJmp;    use Adagres.SetJmp;
+with Adagres.FFI_Types; use Adagres.FFI_Types;
+with Adagres.Error;     use Adagres.Error;
 
 package body Adagres.Fun is
 
@@ -19,26 +22,44 @@ package body Adagres.Fun is
       procedure Unreachable with
         Import, Convention => C, External_Name => "abort", No_Return;
 
-      Ok     : int;
-      Result : Any_Datum;
+      procedure Rethrow_Error (Error : Error_Data_Access) with
+        Import, Convention => C, External_Name => "ReThrowError", No_Return;
+
+      procedure Re_Throw with
+        Import, Convention => C, External_Name => "pg_re_throw", No_Return;
+
       Old_JB : access Sig_Jmp_Buf;
+      CB     : access Error_Context_Callback;
+      Result : Any_Datum;
    begin
-      Old_JB := Adagres.Fun.PG_exception_stack;
-      Ok     := sigsetjmp (Local_Sig_Jmp_Buf'Access, 0);
-      if Ok /= 0 then
-         Adagres.Fun.PG_exception_stack := Old_JB;
+      if sigsetjmp (Local_Sig_Jmp_Buf'Access, 0) /= 0 then
+         Adagres.Error.PG_exception_stack  := Old_JB;
+         Adagres.Error.Error_Context_Stack := CB;
          Re_Throw;
       else
-         Result := Fun (FCI);
+         Old_JB                           := Adagres.Error.PG_exception_stack;
+         CB                               := Adagres.Error.Error_Context_Stack;
+         Adagres.Error.PG_exception_stack := Local_Sig_Jmp_Buf'Access;
+         Result                           := Fun (FCI);
       end if;
+      Adagres.Error.PG_exception_stack  := Old_JB;
+      Adagres.Error.Error_Context_Stack := CB;
       return Result;
    exception
+      when Postgres_Error =>
+         Adagres.Error.PG_exception_stack  := Old_JB;
+         Adagres.Error.Error_Context_Stack := CB;
+         Rethrow_Error (Last_Postgres_Error);
       when Error : others =>
-         Ok := errstart (Adagres.Constants.ERROR, To_C ("test"));
-         Ok := errcode (ERRCODE_INTERNAL_ERROR);
-         errmsg (To_C (Exception_Message (Error)));
-         errfinish (To_C ("aaa"), 10, To_C ("bbb"));
-         Unreachable;
+         declare
+            Ok : int;
+         begin
+            Ok := errstart (Adagres.Constants.ERROR, To_C ("test"));
+            Ok := errcode (ERRCODE_INTERNAL_ERROR);
+            errmsg (To_C (Exception_Message (Error)));
+            errfinish (To_C ("aaa"), 10, To_C ("bbb"));
+            Unreachable;
+         end;
    end Native_Function;
 
 end Adagres.Fun;
