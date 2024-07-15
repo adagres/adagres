@@ -1,5 +1,4 @@
 with Adagres.Datum;   use Adagres.Datum;
-with Interfaces.C;    use Interfaces.C;
 with Adagres.Codegen; use Adagres.Codegen;
 
 package Adagres.Fun with

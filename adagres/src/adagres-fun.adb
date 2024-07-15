@@ -1,3 +1,4 @@
+with Interfaces.C;      use Interfaces.C;
 with Ada.Exceptions;    use Ada.Exceptions;
 with Adagres.Constants; use Adagres.Constants;
 with Adagres.SetJmp;    use Adagres.SetJmp;
@@ -52,13 +53,13 @@ package body Adagres.Fun is
          Rethrow_Error (Last_Postgres_Error);
       when Error : others =>
          declare
-            Ok : int;
+            Unused : int;
          begin
             Adagres.Error.PG_exception_stack  := Old_JB;
             Adagres.Error.Error_Context_Stack := CB;
 
-            Ok := errstart (Adagres.Constants.ERROR, To_C ("test"));
-            Ok := errcode (ERRCODE_INTERNAL_ERROR);
+            Unused := errstart (Adagres.Constants.ERROR, To_C ("test"));
+            Unused := errcode (ERRCODE_INTERNAL_ERROR);
             errmsg (To_C (Exception_Message (Error)));
             errfinish (To_C ("aaa"), 10, To_C ("bbb"));
             Unreachable;
