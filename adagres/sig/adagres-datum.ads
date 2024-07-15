@@ -53,4 +53,6 @@ is
       Is_Null at 0 range Any_Datum'Size .. Any_Datum'Size + bool'Size;
    end record;
 
+   subtype Null_Datum is Nullable_Datum(True);
+
 end Adagres.Datum;
