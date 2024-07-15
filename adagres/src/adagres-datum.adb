@@ -11,11 +11,8 @@ package body Adagres.Datum is
    function To_Any_Datum (D : Datum_Int64) return Any_Datum is (Any_Datum (D));
 
    function To_Datum_Int16 (D : Any_Datum) return Datum_Int16 is (Datum_Int16 (D));
-
    function To_Datum_Int32 (D : Any_Datum) return Datum_Int32 is (Datum_Int32 (D));
-
-   overriding function "+" (A, B : Datum_Int32) return Datum_Int32 is
-     (Datum_Int32 (Interfaces.Integer_32 (A) + Interfaces.Integer_32 (B)));
+   function To_Datum_Int64 (D : Any_Datum) return Datum_Int64 is (Datum_Int64 (D));
 
    function From_Datum (D : Datum_Int16) return Interfaces.Integer_16 is
      (Interfaces.Integer_16 (D));
@@ -23,7 +20,5 @@ package body Adagres.Datum is
      (Interfaces.Integer_32 (D));
    function From_Datum (D : Datum_Int64) return Interfaces.Integer_64 is
      (Interfaces.Integer_64 (D));
-
-   function To_Datum (ND : Nullable_Datum) return Any_Datum is (ND.Value);
 
 end Adagres.Datum;

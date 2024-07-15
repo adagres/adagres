@@ -29,8 +29,7 @@ is
      Inline_Always;
    function To_Datum_Int32 (D : Any_Datum) return Datum_Int32 with
      Inline_Always;
-
-   function "+" (A, B : Datum_Int32) return Datum_Int32 with
+   function To_Datum_Int64 (D : Any_Datum) return Datum_Int64 with
      Inline_Always;
 
    function From_Datum (D : Datum_Int16) return Interfaces.Integer_16 with
@@ -53,7 +52,5 @@ is
       Value   at 0 range              0 ..         Any_Datum'Size - 1;
       Is_Null at 0 range Any_Datum'Size .. Any_Datum'Size + bool'Size;
    end record;
-
-private
 
 end Adagres.Datum;
