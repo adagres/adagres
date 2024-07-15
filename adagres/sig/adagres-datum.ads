@@ -5,12 +5,11 @@ with System.Storage_Elements;
 package Adagres.Datum with
   Preelaborate
 is
-   type Any_Datum is private;
-   type Datum_Int16 is private;
-   type Datum_Int32 is private;
-   type Datum_Int64 is private;
+   type Any_Datum is new System.Storage_Elements.Integer_Address;
 
-   type Nullable_Datum is private;
+   type Datum_Int16 is new Any_Datum;
+   type Datum_Int32 is new Any_Datum;
+   type Datum_Int64 is new Any_Datum;
 
    function To_Datum (I : Interfaces.Integer_16) return Datum_Int16 with
      Inline_Always;
@@ -41,21 +40,20 @@ is
    function From_Datum (D : Datum_Int64) return Interfaces.Integer_64 with
      Inline_Always;
 
-   function To_Datum (ND : Nullable_Datum) return Any_Datum with
-     Inline_Always;
+   type Nullable_Datum (Is_Null : bool := False) is record
+      case Is_Null is
+         when False =>
+            Value : Any_Datum;
+         when True =>
+            null;
+      end case;
+   end record;
+
+   for Nullable_Datum use record
+      Value   at 0 range              0 ..         Any_Datum'Size - 1;
+      Is_Null at 0 range Any_Datum'Size .. Any_Datum'Size + bool'Size;
+   end record;
 
 private
-
-   type Any_Datum is new System.Storage_Elements.Integer_Address;
-
-   type Datum_Int16 is new Any_Datum;
-   type Datum_Int32 is new Any_Datum;
-   type Datum_Int64 is new Any_Datum;
-
-   type Nullable_Datum is record
-      Value   : Any_Datum;
-      Is_Null : bool;
-   end record with
-     Convention => C_Pass_By_Copy;
 
 end Adagres.Datum;

@@ -54,6 +54,9 @@ package body Adagres.Fun is
          declare
             Ok : int;
          begin
+            Adagres.Error.PG_exception_stack  := Old_JB;
+            Adagres.Error.Error_Context_Stack := CB;
+
             Ok := errstart (Adagres.Constants.ERROR, To_C ("test"));
             Ok := errcode (ERRCODE_INTERNAL_ERROR);
             errmsg (To_C (Exception_Message (Error)));

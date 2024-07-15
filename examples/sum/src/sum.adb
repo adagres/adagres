@@ -31,8 +31,7 @@ package body Sum is
       Put_Line ("args: " & FCI.Num_Args'Image);
       --  Sum 1st and 3rd arguments.
       return
-        To_Any_Datum
-          (To_Datum_Int32 (To_Datum (FCI.Args (1))) + To_Datum_Int32 (To_Datum (FCI.Args (3))));
+        To_Any_Datum (To_Datum_Int32 (FCI.Args (1).Value) + To_Datum_Int32 (FCI.Args (3).Value));
    end Sum;
 
 end Sum;
