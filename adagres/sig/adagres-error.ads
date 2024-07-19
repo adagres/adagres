@@ -1,7 +1,6 @@
 with Adagres.Memory_Context;
 with Adagres.FFI_Types; use Adagres.FFI_Types;
 with Adagres.SetJmp;    use Adagres.SetJmp;
-with Adagres.Codegen;   use Adagres.Codegen;
 
 package Adagres.Error with
   Preelaborate

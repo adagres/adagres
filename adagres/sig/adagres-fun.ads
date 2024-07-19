@@ -1,5 +1,5 @@
-with Adagres.Datum;   use Adagres.Datum;
-with Adagres.Codegen; use Adagres.Codegen;
+with Adagres.Datum;     use Adagres.Datum;
+with Adagres.FFI_Types; use Adagres.FFI_Types;
 
 package Adagres.Fun with
   Preelaborate

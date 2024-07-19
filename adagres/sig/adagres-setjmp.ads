@@ -1,5 +1,5 @@
-with Adagres.Codegen; use Adagres.Codegen;
-with Interfaces.C;    use Interfaces.C;
+with Adagres.FFI_Types; use Adagres.FFI_Types;
+with Interfaces.C;      use Interfaces.C;
 
 package Adagres.SetJmp with
   Preelaborate

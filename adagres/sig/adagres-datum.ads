@@ -39,20 +39,30 @@ is
    function From_Datum (D : Datum_Int64) return Interfaces.Integer_64 with
      Inline_Always;
 
-   type Nullable_Datum (Is_Null : bool := False) is record
-      case Is_Null is
-         when False =>
-            Value : Any_Datum;
-         when True =>
-            null;
-      end case;
-   end record;
+   generic
+      type Datum_Type is new Any_Datum;
+   package A_Nullable_Datum is
+      type Nullable_Datum (Is_Null : bool := False) is record
+         case Is_Null is
+            when False =>
+               Value : Any_Datum;
+            when True =>
+               null;
+         end case;
+      end record;
 
-   for Nullable_Datum use record
-      Value   at 0 range              0 ..         Any_Datum'Size - 1;
-      Is_Null at 0 range Any_Datum'Size .. Any_Datum'Size + bool'Size;
-   end record;
+      for Nullable_Datum use record
+         Value   at 0 range              0 ..         Any_Datum'Size - 1;
+         Is_Null at 0 range Any_Datum'Size .. Any_Datum'Size + bool'Size;
+      end record;
 
-   subtype Null_Datum is Nullable_Datum(True);
+      subtype Null_Datum is Nullable_Datum (True);
+
+   end A_Nullable_Datum;
+
+   package Any_Nullable_Datum is new A_Nullable_Datum (Any_Datum);
+   package Nullable_Datum_Int16 is new A_Nullable_Datum (Datum_Int16);
+   package Nullable_Datum_Int32 is new A_Nullable_Datum (Datum_Int32);
+   package Nullable_Datum_Int64 is new A_Nullable_Datum (Datum_Int64);
 
 end Adagres.Datum;

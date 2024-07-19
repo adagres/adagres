@@ -101,7 +101,6 @@ begin
    Put_Line (Checked_FFI_Ads, "with Interfaces.C.Extensions;");
 
    Put_Line (Checked_FFI_Ads, "with Adagres.FFI_Types; use Adagres.FFI_Types;");
-   Put_Line (Checked_FFI_Ads, "with Adagres.Codegen; use Adagres.Codegen;");
    Put_Line (Checked_FFI_Ads, "package Adagres.Checked_FFI with Preelaborate is");
 
    Put_Line (Checked_FFI_Adb, "with System;");
@@ -111,6 +110,7 @@ begin
    Put_Line (Checked_FFI_Adb, "with Adagres.FFI;");
    Put_Line (Checked_FFI_Adb, "with Adagres.SetJmp; use Adagres.SetJmp;");
    Put_Line (Checked_FFI_Adb, "with Adagres.Error; use Adagres.Error;");
+   Put_Line (Checked_FFI_Adb, "with Adagres.FFI_Types; use Adagres.FFI_Types;");
    Put_Line (Checked_FFI_Adb, "package body Adagres.Checked_FFI is");
 
    Unit := Context.Get_From_File ("../adagres/sig/adagres-ffi.ads");

@@ -1,8 +1,11 @@
 with Interfaces;
-with Interfaces.C;
-with Adagres.Constants;
+with Interfaces.C;            use Interfaces.C;
 with Interfaces.C.Strings;
-with Interfaces.C.Extensions;
+with Interfaces.C.Extensions; use Interfaces.C.Extensions;
+
+with Adagres.FFI_Layouts; use Adagres.FFI_Layouts;
+with Adagres.Datum;       use Adagres.Datum;
+with Adagres.Constants;
 
 package Adagres.FFI_Types with
   Preelaborate
@@ -12,6 +15,33 @@ is
 
    type Memory_Context_Data is private;
    type Memory_Context is access Memory_Context_Data;
+
+   type Function_Call_Info_Base_Data_Arguments is
+     array (short range <>) of Any_Nullable_Datum.Nullable_Datum with
+     Convention => C;
+   type Function_Call_Info_Base_Data (Num_Args : short := 0) is record
+      flinfo      : void_ptr;
+      context     : void_ptr;
+      resultinfo  : void_ptr;
+      fncollation : unsigned;
+      Is_Null     : bool;
+      Args        : Function_Call_Info_Base_Data_Arguments (1 .. Num_Args);
+   end record;
+
+   for Function_Call_Info_Base_Data use record
+      flinfo      at      flinfo_Offset range 0 ..      flinfo_Bits;
+      context     at     context_Offset range 0 ..     context_Bits;
+      resultinfo  at  resultinfo_Offset range 0 ..  resultinfo_Bits;
+      fncollation at fncollation_Offset range 0 .. fncollation_Bits;
+      Is_Null     at     Is_Null_Offset range 0 ..     Is_Null_Bits;
+      Num_Args    at    Num_Args_Offset range 0 ..    Num_Args_Bits;
+      --  Args at Args_Offset range 0 .. ??;
+   end record;
+
+   type Sig_Jmp_Buf is limited null record;
+   pragma Warnings (Off); -- avoid unused bits warning below
+   for Sig_Jmp_Buf'Size use Sig_Jmp_Buf_Size;
+   pragma Warnings (On);
 
    package C renames Interfaces.C;
    package C_Ext renames Interfaces.C.Extensions;
