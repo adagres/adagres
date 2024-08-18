@@ -33,7 +33,7 @@ void extract_types_and_constants()
 
         fprintf(f,
                 "Sig_Jmp_Buf_Size : constant Integer := %1$d;\n",
-                sizeof(sigjmp_buf));
+                sizeof(sigjmp_buf) * 8);
 
         fprintf(f, "end Adagres.FFI_Layouts;\n");
         fclose(f);
