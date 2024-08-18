@@ -69,8 +69,8 @@ procedure Main is
               (Checked_FFI_Adb,
                Text.Encode (Node.As_Basic_Decl.P_Subp_Spec_Or_Null (True).Text, "utf8") & " is " &
                "Result     : " & Buf_Str.To_String (Ret_Type) & ";" &
-               "Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;" &
-               "Old_JB : access Sig_Jmp_Buf;" & "CB: access Error_Context_Callback;" &
+               "Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;" & "Old_JB : access Sig_Jmp_Buf;" &
+               "CB: access Error_Context_Callback;" &
                "Preceding_Memory_Context : Adagres.FFI_Types.Memory_Context := " &
                "Adagres.Memory_Context.Current_Memory_Context;" & "begin " &
                "if sigsetjmp (Local_Sig_Jmp_Buf'Access, 1) = 0 then " &
