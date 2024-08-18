@@ -40,7 +40,7 @@ is
 
    type Sig_Jmp_Buf is limited null record;
    pragma Warnings (Off); -- avoid unused bits warning below
-   for Sig_Jmp_Buf'Size use Sig_Jmp_Buf_Size;
+   for Sig_Jmp_Buf'Size use Sig_Jmp_Buf_Size*8;
    pragma Warnings (On);
 
    package C renames Interfaces.C;

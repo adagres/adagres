@@ -69,16 +69,17 @@ procedure Main is
               (Checked_FFI_Adb,
                Text.Encode (Node.As_Basic_Decl.P_Subp_Spec_Or_Null (True).Text, "utf8") & " is " &
                "Result     : " & Buf_Str.To_String (Ret_Type) & ";" &
+  "Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;" &
                "Old_JB : access Sig_Jmp_Buf;" & "CB: access Error_Context_Callback;" &
                "Preceding_Memory_Context : Adagres.FFI_Types.Memory_Context := " &
                "Adagres.Memory_Context.Current_Memory_Context;" & "begin " &
-               "if sigsetjmp (Local_Sig_Jmp_Buf'Access, 0) /= 0 then " &
+               "if sigsetjmp (Local_Sig_Jmp_Buf'Access, 1) = 1 then " &
                "Adagres.Error.PG_exception_stack := Old_JB;" &
                "Adagres.Error.Error_Context_Stack := CB;" &
                "Raise_Postgres_Error (Preceding_Memory_Context);" & " else " &
                "Old_JB := Adagres.Error.PG_exception_stack;" &
                "CB := Adagres.Error.Error_Context_Stack;" &
-               "Adagres.Error.PG_exception_stack := Local_Sig_Jmp_Buf'Access;" &
+               "Adagres.Error.PG_exception_stack := Local_Sig_Jmp_Buf'Unchecked_Access;" &
                (if Is_Function then "Result := " else "") & Buf_Str.To_String (FQ_Subp_Name) & "(" &
                Buf_Str.To_String (Pass_Args) & ");" &
                "Adagres.Error.PG_exception_stack := Old_JB;" &
@@ -117,7 +118,6 @@ begin
    --     Unit.Print;
    Unit.Root.Traverse (Process_Node'Access);
 
-   Put_Line (Checked_FFI_Ads, "private Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;");
    Put_Line (Checked_FFI_Ads, "end Adagres.Checked_FFI;");
    Put_Line (Checked_FFI_Adb, "end Adagres.Checked_FFI;");
 

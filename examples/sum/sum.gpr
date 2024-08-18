@@ -28,17 +28,19 @@ library project Sum is
    for Library_Encapsulated_Supported use "true";
    for Shared_Library_Minimum_Switches use ();
    for Library_Standalone use "encapsulated";
+   -- for Library_Standalone use "standard";
+   for Library_Kind use "dynamic";
 
    case Sum_Config.Alire_Host_OS is
      when "macos" =>
-       for Library_Encapsulated_Options use ("-bundle", "-bundle_loader", Adagres_Ext_Config.Postgres_Bin);
+       for Library_Encapsulated_Options use ("-bundle", "-bundle_loader", Adagres_Ext_Config.Postgres_Bin, "-fPIC");
      when others =>
        for Library_Encapsulated_Options use ("-shared","-fPIC");
    end case;
    --
 
    package Compiler is
-      for Default_Switches ("Ada") use Sum_Config.Ada_Compiler_Switches & ("-gnat2022", "-gnatyM100", "-fPIC");
+      for Default_Switches ("Ada") use Sum_Config.Ada_Compiler_Switches & ("-gnat2022", "-gnatyM100");
       for Switches ("C") use ("-I", Adagres_Ext_Config.Postgres_IncludeDir, "-fPIC");
    end Compiler;
 
