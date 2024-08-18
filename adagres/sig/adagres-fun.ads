@@ -11,8 +11,4 @@ is
       with function Fun (FCI : Function_Call_Info) return Any_Datum;
    function Native_Function (FCI : Function_Call_Info) return Any_Datum;
 
-private
-
-   Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;
-
 end Adagres.Fun;

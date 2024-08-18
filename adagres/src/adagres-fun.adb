@@ -29,23 +29,25 @@ package body Adagres.Fun is
       procedure Re_Throw with
         Import, Convention => C, External_Name => "pg_re_throw", No_Return;
 
+
+      Local_Sig_Jmp_Buf : aliased Sig_Jmp_Buf;
       Old_JB : access Sig_Jmp_Buf;
       CB     : access Error_Context_Callback;
       Result : Any_Datum;
    begin
-      if sigsetjmp (Local_Sig_Jmp_Buf'Access, 0) /= 0 then
+      if sigsetjmp (Local_Sig_Jmp_Buf'Access, 1) = 0 then
+         Old_JB                            := Adagres.Error.PG_exception_stack;
+         CB                                := Adagres.Error.Error_Context_Stack;
+         Adagres.Error.PG_exception_stack  := Local_Sig_Jmp_Buf'Unchecked_Access;
+         Result                            := Fun (FCI);
+         Adagres.Error.PG_exception_stack  := Old_JB;
+         Adagres.Error.Error_Context_Stack := CB;
+         return Result;
+      else
          Adagres.Error.PG_exception_stack  := Old_JB;
          Adagres.Error.Error_Context_Stack := CB;
          Re_Throw;
-      else
-         Old_JB                           := Adagres.Error.PG_exception_stack;
-         CB                               := Adagres.Error.Error_Context_Stack;
-         Adagres.Error.PG_exception_stack := Local_Sig_Jmp_Buf'Access;
-         Result                           := Fun (FCI);
       end if;
-      Adagres.Error.PG_exception_stack  := Old_JB;
-      Adagres.Error.Error_Context_Stack := CB;
-      return Result;
    exception
       when Postgres_Error =>
          Adagres.Error.PG_exception_stack  := Old_JB;
